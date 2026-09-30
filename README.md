@@ -22,17 +22,20 @@ By the end of the lab, you should be able to:
 
 ## 1. Set up the project directory
 
+Log into NAU Monsoon using your credentials
+
 ```bash
 export PROJ_DIR=/scratch/mt2245/CompGenomicsCourse/fall26/blast
 mkdir $PROJ_DIR
 cd $PROJ_DIR/
 ```
+Make sure you sub out your own user ID in the command above.
 
-Download the two protein FASTA files from this GitHub repository:
+Next, download the two protein FASTA files from this GitHub repository:
 
 ```bash
-wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/mouse.1.protein.faa.gz
-wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/zebrafish.1.protein.faa.gz
+wget https://github.com/marctollis/INF515-BLAST-Lab/raw/main/mouse.1.protein.faa.gz
+wget https://github.com/marctollis/INF515-BLAST-Lab/raw/main/zebrafish.1.protein.faa.gz
 ```
 
 Look at the files in the directory:
@@ -316,13 +319,17 @@ head zebrafish-besthits.faa
 
 ---
 
-## 10. BLAST the zebrafish proteins back against mouse
+## 10. BLAST the zebrafish proteins back against the same reduced mouse set
 
-Build the mouse BLAST database with indexed sequence IDs:
+For this teaching-scale exercise, we will search the zebrafish best hits back against the **same reduced mouse query set** (`mm-second.fa`), rather than against the entire mouse proteome.
+
+This keeps the exercise fast and makes the reciprocal comparison symmetric within our reduced set.
+
+Build a BLAST database from `mm-second.fa`:
 
 ```bash
 srun makeblastdb \
--in mouse.1.protein.faa \
+-in mm-second.fa \
 -dbtype prot \
 -parse_seqids
 ```
@@ -332,35 +339,37 @@ Run the reverse BLAST search:
 ```bash
 srun blastp \
 -query zebrafish-besthits.faa \
--db mouse.1.protein.faa \
--out zebrafish.x.mouse.tsv \
+-db mm-second.fa \
+-out zebrafish.x.mouse96.tsv \
 -outfmt 6
 ```
 
 Now we have:
 
-- **forward search:** mouse → zebrafish
-- **reverse search:** zebrafish → mouse
+- **forward search:** reduced mouse set → full zebrafish proteome
+- **reverse search:** zebrafish best hits → same reduced mouse set
+
+> **Important:** These are reciprocal best hits **within the reduced mouse set**, not genome-wide RBHs.
 
 ---
 
 ## 11. Find the best mouse hit for each zebrafish protein
 
 ```bash
-sort -k1,1 -k12,12nr zebrafish.x.mouse.tsv \
+sort -k1,1 -k12,12nr zebrafish.x.mouse96.tsv \
 | awk '!seen[$1]++' \
-> reverse_best_hits.tsv
+> reverse_best_hits96.tsv
 ```
 
 Count the reverse best hits:
 
 ```bash
-wc -l reverse_best_hits.tsv
+wc -l reverse_best_hits96.tsv
 ```
 
-`reverse_best_hits.tsv` contains:
+`reverse_best_hits96.tsv` contains:
 
-**zebrafish query → best mouse hit**
+**zebrafish query → best mouse hit within the reduced mouse set**
 
 ---
 
@@ -381,9 +390,9 @@ mouse_protein    zebrafish_protein
 Now make a two-column table from the reverse search and flip the columns so that it has the same orientation:
 
 ```bash
-awk '{print $2 "\t" $1}' reverse_best_hits.tsv \
+awk '{print $2 "\t" $1}' reverse_best_hits96.tsv \
 | sort -u \
-> reverse_pairs_flipped.tsv
+> reverse_pairs96_flipped.tsv
 ```
 
 This also has the form:
@@ -395,33 +404,38 @@ mouse_protein    zebrafish_protein
 Find pairs present in both files:
 
 ```bash
-comm -12 forward_pairs.tsv reverse_pairs_flipped.tsv \
-> reciprocal_best_hits.tsv
+comm -12 forward_pairs.tsv reverse_pairs96_flipped.tsv \
+> reciprocal_best_hits96.tsv
 ```
 
 Count them:
 
 ```bash
-wc -l reciprocal_best_hits.tsv
+wc -l reciprocal_best_hits96.tsv
 ```
 
 View them:
 
 ```bash
-cat reciprocal_best_hits.tsv
+cat reciprocal_best_hits96.tsv
 ```
+
+In our test run, this reduced comparison produced about **46 reciprocal pairs**.
 
 ---
 
 ## 13. Discussion: what did we learn?
 
-In our example, many mouse proteins had strong zebrafish BLAST hits, but very few pairs satisfied the strict reciprocal-best-hit criterion.
+The reduced-set RBH analysis gives us a useful teaching-scale approximation of putative orthology, but it does **not** prove that the pairs are true orthologs.
 
 ### Questions
 
 - Why can two proteins be highly similar without being orthologs?
 - Why can multiple mouse proteins have the same zebrafish best hit?
-- Why might a true orthologous relationship fail the strict RBH test?
+- Why do some best-hit pairs fail the reciprocal test?
+- Why does the set of sequences included in the search matter for RBH inference?
+- What would we need to do to calculate genome-wide RBHs?
+- Why might even genome-wide RBHs still fail to capture the true evolutionary history of a gene family?
 - How can gene duplication and gene loss complicate pairwise BLAST-based orthology inference?
 - Why might genome-scale tools use orthogroups and gene trees rather than only reciprocal BLAST hits?
 
@@ -431,7 +445,9 @@ In our example, many mouse proteins had strong zebrafish BLAST hits, but very fe
 
 **BLAST → sequence similarity / candidate homologs**
 
-**Reciprocal best hit → simple heuristic for putative orthology**
+**RBH within our reduced set → stronger candidate for putative orthology**
+
+**RBH is still a heuristic, not proof of orthology**
 
 **Orthogroups + gene trees → more complete inference of orthology and paralogy**
 
