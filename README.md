@@ -31,8 +31,8 @@ cd $PROJ_DIR/
 Download the two protein FASTA files from this GitHub repository:
 
 ```bash
-wget https://github.com/marctollis/INF515-BLAST-Lab/raw/main/mouse.1.protein.faa.gz
-wget https://github.com/marctollis/INF515-BLAST-Lab/raw/main/zebrafish.1.protein.faa.gz
+wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/mouse.1.protein.faa.gz
+wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/zebrafish.1.protein.faa.gz
 ```
 
 The repository should contain only:
