@@ -34,8 +34,8 @@ Make sure you sub out your own user ID in the command above.
 Next, download the two protein FASTA files from this GitHub repository:
 
 ```bash
-wget https://github.com/marctollis/INF-515-BLAST-Lab/blob/main/mouse.1.protein.faa.gz
-wget https://github.com/marctollis/INF-515-BLAST-Lab/blob/main/zebrafish.1.protein.faa.gz
+wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/refs/heads/main/zebrafish.1.protein.faa.gz
+wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/refs/heads/main/mouse.1.protein.faa.gz
 ```
 
 Look at the files in the directory:
