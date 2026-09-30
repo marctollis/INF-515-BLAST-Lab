@@ -35,14 +35,6 @@ wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/mouse.1.protein.fa
 wget https://github.com/marctollis/INF-515-BLAST-Lab/raw/main/zebrafish.1.protein.faa.gz
 ```
 
-The repository should contain only:
-
-```text
-README.md
-mouse.1.protein.faa.gz
-zebrafish.1.protein.faa.gz
-```
-
 Look at the files in the directory:
 
 ```bash
